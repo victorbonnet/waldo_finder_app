@@ -21,7 +21,7 @@ To generate annotations I used [LabelImg](https://github.com/vc1492a/Hey-Waldo.)
 
 #### Initialization
 ```
-export WALDO_REPO={{YOUR_FOLDER}}
+export WALDO_REPO=[YOUR_FOLDER]
 ```
 
 #### Generate CSV file from XML annotations
@@ -126,18 +126,19 @@ tensorboard --logdir=gs://${YOUR_GCS_BUCKET}/train
 ###### Generate frozen graph
 
 ```
-export CONFIG_FILE=./models/ssd_mobilenet_v2/train/pipeline.config
-export CHECKPOINT_PATH=./models/ssd_mobilenet_v2/train/model.ckpt-9634
-export OUTPUT_DIR=~/Desktop/
+export CONFIG_FILE=${WALDO_REPO}/models/ssd_mobilenet_v2/train/pipeline.config
+export CHECKPOINT_PATH=${WALDO_REPO}/models/ssd_mobilenet_v2/train/model.ckpt-9634
+export OUTPUT_DIR=/tmp/
 
-python ./tensorflow_models/research/object_detection/export_tflite_ssd_graph.py \
+# Export graph for tensorflow lite
+python ${WALDO_REPO}/tensorflow_models/research/object_detection/export_tflite_ssd_graph.py \
 --pipeline_config_path=$CONFIG_FILE \
 --trained_checkpoint_prefix=$CHECKPOINT_PATH \
 --output_directory=$OUTPUT_DIR \
 --add_postprocessing_op=true
 
-
-cd tensorflow 
+# Optimize graph for tensorflow lite using TOCO
+cd ${WALDO_REPO}/tensorflow | \
 bazel run -c opt tensorflow/contrib/lite/toco:toco -- \
 --input_file=$OUTPUT_DIR/tflite_graph.pb \
 --output_file=$OUTPUT_DIR/detect.tflite \
@@ -150,14 +151,60 @@ bazel run -c opt tensorflow/contrib/lite/toco:toco -- \
 --change_concat_input_ranges=false \
 --allow_custom_ops
 
-
-# Build and install the demo
-bazel build -c opt --cxxopt='--std=c++11' //tensorflow/contrib/lite/examples/android:tflite_demo
-adb install -r -f bazel-bin/tensorflow/contrib/lite/examples/android/tflite_demo.apk
 ```
 
 ##### Test retrained models
 ```
 python test_model.py ./models/ssd_mobilenet_v2/train/frozen_inference_graph.pb images/1_1.jpg
+```
+
+## Android app
+#### prepare model
+```
+cp ${OUTPUT_DIR}/detect.tflite ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/assets/
+
+echo "waldo\n" > ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/assets/waldo.txt
+```
+
+#### Build & install app
+
+```
+cd ${WALDO_REPO}/tensorflow
+```
+
+###### Configure the SDK and NDK path. You need to update path with what's confgured on your machine.
+```
+echo '
+android_sdk_repository(
+    name = "androidsdk",
+    path = "PATH_TO_SDK",
+)
+
+android_ndk_repository(
+    name = "androidndk",
+    path ="PATH_TO_NDK",
+)
+' >> WORKSPACE
+```
+
+###### Change the config to use our retrained model and our label file
+```
+sed -i -e 's#@tflite_mobilenet_ssd_quant//:detect.tflite#//tensorflow/contrib/lite/examples/android/app/src/main/assets:detect.tflite#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/BUILD
+
+sed -i -e 's#coco_labels_list.txt#waldo.txt#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/java/org/tensorflow/demo/DetectorActivity.java
+
+sed -i -e 's#TF_OD_API_IS_QUANTIZED = true#TF_OD_API_IS_QUANTIZED = false#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/java/org/tensorflow/demo/DetectorActivity.java
+
+```
+
+
+###### Build the Android app
+```
+bazel build -c opt --cxxopt='--std=c++11' //tensorflow/contrib/lite/examples/android:tflite_demo
+```
+
+###### Install the Android app
+```
+adb install -r -f bazel-bin/tensorflow/contrib/lite/examples/android/tflite_demo.apk
 ```
 
