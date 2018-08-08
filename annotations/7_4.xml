@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>7_4.jpg</filename>
+	<path>/Users/victor/Documents/waldo/images/7_4.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>539</width>
+		<height>719</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>waldo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>34</xmin>
+			<ymin>299</ymin>
+			<xmax>68</xmax>
+			<ymax>348</ymax>
+		</bndbox>
+	</object>
+</annotation>

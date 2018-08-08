@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>25_1.jpg</filename>
+	<path>/Users/victor/Documents/waldo/images/25_1.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>156</width>
+		<height>208</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>waldo</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>47</xmin>
+			<ymin>44</ymin>
+			<xmax>61</xmax>
+			<ymax>61</ymax>
+		</bndbox>
+	</object>
+</annotation>
