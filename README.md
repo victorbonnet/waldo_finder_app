@@ -49,7 +49,7 @@ https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc
 
 ### Add tensorflow & models repo
 ```
-git submodule init
+git submodule update init
 
 export PYTHONPATH=$PYTHONPATH:$WALDO_REPO/tensorflow_models/research:$WALDO_REPO/tensorflow_models/research/slim
 
@@ -60,7 +60,7 @@ cd ../..
 
 ## Retrain SSD MobileNet v2
 ```
-export MODEL_DIR=${WALDO_REPO}/models/ssd_mobilenet
+export MODEL_DIR=${WALDO_REPO}/models/ssd_mobilenet_v2
 export PIPELINE_CONFIG_PATH=${MODEL_DIR}/pipeline.config
 export NUM_TRAIN_STEPS=10
 export NUM_EVAL_STEPS=1
