@@ -163,7 +163,18 @@ python test_model.py ./models/ssd_mobilenet_v2/train/frozen_inference_graph.pb i
 ```
 cp ${OUTPUT_DIR}/detect.tflite ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/assets/
 
-echo "waldo\n" > ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/assets/waldo.txt
+echo "???\nwaldo" > ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/assets/waldo.txt
+```
+
+##### Change the config to use our retrained model and our label file
+```
+sed -i -e 's#@tflite_mobilenet_ssd_quant//:detect.tflite#//tensorflow/contrib/lite/examples/android/app/src/main/assets:detect.tflite#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/BUILD
+
+sed -i -e 's#coco_labels_list.txt#waldo.txt#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/java/org/tensorflow/demo/DetectorActivity.java
+
+sed -i -e 's#TF_OD_API_IS_QUANTIZED = true#TF_OD_API_IS_QUANTIZED = false#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/java/org/tensorflow/demo/DetectorActivity.java
+
+sed -i -e 's#TFL Detect#Waldo Detector#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/res/values/base-strings.xml
 ```
 
 #### Build & install app
@@ -185,16 +196,6 @@ android_ndk_repository(
     path ="PATH_TO_NDK",
 )
 ' >> WORKSPACE
-```
-
-###### Change the config to use our retrained model and our label file
-```
-sed -i -e 's#@tflite_mobilenet_ssd_quant//:detect.tflite#//tensorflow/contrib/lite/examples/android/app/src/main/assets:detect.tflite#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/BUILD
-
-sed -i -e 's#coco_labels_list.txt#waldo.txt#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/java/org/tensorflow/demo/DetectorActivity.java
-
-sed -i -e 's#TF_OD_API_IS_QUANTIZED = true#TF_OD_API_IS_QUANTIZED = false#g' ${WALDO_REPO}/tensorflow/tensorflow/contrib/lite/examples/android/app/src/main/java/org/tensorflow/demo/DetectorActivity.java
-
 ```
 
 
