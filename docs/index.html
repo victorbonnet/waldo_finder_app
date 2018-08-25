@@ -20,17 +20,23 @@
     <h1>Waldo Detector</h1>
     <button type="button" id="run">Run</button>
     <button type="button" id="toggle">Toggle Image</button>
-    <div>
+    <!-- <div>
       <img id="image" width="480" height="640" crossorigin="anonymous"></img>
       <canvas id="canvas" width="480" height="640"></canvas>
+    </div> -->
+
+    <div>
+      <video id="video" width="640" height="480" autoplay></video>
+      <button type="button" id="snap">Snap Photo</button>
+      <canvas id="canvas" width="640" height="480"></canvas>
     </div>
   </body>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12.5"> </script>
   <script>
 
 
-    const imageURL = 'https://raw.githubusercontent.com/victorbonnet/waldo_finder_app/master/docs/waldo.jpg';
-    const image2URL = 'https://raw.githubusercontent.com/victorbonnet/waldo_finder_app/master/docs/waldo2.jpg';
+    // const imageURL = 'https://raw.githubusercontent.com/victorbonnet/waldo_finder_app/master/docs/waldo.jpg';
+    // const image2URL = 'https://raw.githubusercontent.com/victorbonnet/waldo_finder_app/master/docs/waldo2.jpg';
 
     const GOOGLE_CLOUD_STORAGE_DIR =
       'https://raw.githubusercontent.com/victorbonnet/waldo_finder_app/master/docs/web_model/';
@@ -39,26 +45,54 @@
     const WEIGHTS_URL =
         GOOGLE_CLOUD_STORAGE_DIR + 'weights_manifest.json';
 
-    const IMAGE_HEIGHT = 640;
-    const IMAGE_WIDTH = 480;
-
     let modelPromise;
 
-    window.onload = () => modelPromise = tf.loadFrozenModel(MODEL_URL, WEIGHTS_URL);
+    window.onload = () => {
+      modelPromise = tf.loadFrozenModel(MODEL_URL, WEIGHTS_URL);
 
-    const button = document.getElementById('toggle');
-    button.onclick = () => {
-      image.src = image.src.endsWith(imageURL) ? image2URL : imageURL;
+      // Grab elements, create settings, etc.
+      var video = document.getElementById('video');
+
+      // Get access to the camera!
+      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const vgaConstraints = {
+          video: {width: {exact: 480}, height: {exact: 640}}
+        };
+
+        // Not adding `{ audio: true }` since we only want video now
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+            video.src = window.URL.createObjectURL(stream);
+            video.play();
+        });
+      }
+
+    }
+
+    // Elements for taking the snapshot
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    var video = document.getElementById('video');
+
+    // Trigger photo take
+    const snap = document.getElementById('snap');
+    snap.onclick = () => {
+      context.drawImage(video, 0, 0, video.width, video.height);
     };
 
-    const image = document.getElementById('image');
-    image.src = imageURL;
+    // const button = document.getElementById('toggle');
+    // button.onclick = () => {
+    //   image.src = image.src.endsWith(imageURL) ? image2URL : imageURL;
+    // };
+
+    // const image = document.getElementById('image');
+    // image.src = imageURL;
 
     const runButton = document.getElementById('run');
     runButton.onclick = async () => {
       const model = await modelPromise;
       // const pixels = tf.fromPixels(image);
-      const pixels = tf.fromPixels(image).toFloat().expandDims(0);
+      // const pixels = tf.fromPixels(image).toFloat().expandDims(0);
+      const pixels = tf.fromPixels(canvas).toFloat().expandDims(0);
       console.log('model loaded');
       console.time('predict1');
 
@@ -75,7 +109,7 @@
 
       const c = document.getElementById('canvas');
       const context = c.getContext('2d');
-      context.drawImage(image, 0, 0);
+      context.drawImage(canvas, 0, 0);
       context.font = '10px Arial';
 
       scores.forEach(function(score, index) {
@@ -85,10 +119,10 @@
           const bottom = boxes[index+2];
           const right = boxes[index+3];
 
-          const minY = top * IMAGE_HEIGHT;
-          const minX = left * IMAGE_WIDTH;
-          const maxY = bottom * IMAGE_HEIGHT;
-          const maxX = right * IMAGE_WIDTH;
+          const minY = top * video.height;
+          const minX = left * video.width;
+          const maxY = bottom * video.height;
+          const maxX = right * video.width;
 
           context.beginPath();
           context.rect(minX, minY, maxX - minX, maxY - minY);
