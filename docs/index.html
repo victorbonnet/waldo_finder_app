@@ -26,9 +26,9 @@
     </div> -->
 
     <div>
-      <video id="video" width="640" height="480" autoplay></video>
+      <video id="video" autoplay></video>
       <button type="button" id="snap">Snap Photo</button>
-      <canvas id="canvas" width="640" height="480"></canvas>
+      <canvas id="canvas"></canvas>
     </div>
   </body>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12.5"> </script>
@@ -56,11 +56,13 @@
       // Get access to the camera!
       if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const vgaConstraints = {
-          video: {width: {exact: 480}, height: {exact: 640}}
+          video: {width: {exact: 480}, height: {exact: 640}},
+          advanced: [{
+            facingMode: "environment"
+          }]
         };
 
-        // Not adding `{ audio: true }` since we only want video now
-        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+        navigator.mediaDevices.getUserMedia(vgaConstraints).then(function(stream) {
             video.src = window.URL.createObjectURL(stream);
             video.play();
         });
@@ -76,7 +78,9 @@
     // Trigger photo take
     const snap = document.getElementById('snap');
     snap.onclick = () => {
-      context.drawImage(video, 0, 0, video.width, video.height);
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
     };
 
     // const button = document.getElementById('toggle');
