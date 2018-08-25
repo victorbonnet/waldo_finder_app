@@ -26,7 +26,7 @@
     </div> -->
 
     <div>
-      <video id="video" autoplay></video>
+      <video id="video" capture="environment" autoplay></video>
       <button type="button" id="snap">Snap Photo</button>
       <canvas id="canvas"></canvas>
     </div>
@@ -56,10 +56,13 @@
       // Get access to the camera!
       if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const vgaConstraints = {
-          video: {width: {exact: 480}, height: {exact: 640}},
-          advanced: [{
-            facingMode: "environment"
-          }]
+          video: {
+            width: {exact: 480},
+            height: {exact: 640},
+            advanced: [{
+              facingMode: "environment"
+            }]
+          }
         };
 
         navigator.mediaDevices.getUserMedia(vgaConstraints).then(function(stream) {
